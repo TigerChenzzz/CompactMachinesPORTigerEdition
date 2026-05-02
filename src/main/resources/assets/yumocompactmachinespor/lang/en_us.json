@@ -1,7 +1,7 @@
 {
-  "itemGroup.yumocompactmachinespor": "Example Mod Tab",
-  "block.yumocompactmachinespor.example_block": "Example Block",
-  "item.yumocompactmachinespor.example_item": "Example Item",
+  "itemGroup.yumocompactmachinespor": "Yumo Compact Machines",
+  "block.yumocompactmachinespor.input_block": "Compact Machine Input",
+  "block.yumocompactmachinespor.output_block": "Compact Machine Output",
 
   "yumocompactmachinespor.configuration.title": "yumo compactmachines por Configs",
   "yumocompactmachinespor.configuration.section.yumocompactmachinespor.common.toml": "yumo compactmachines por Configs",
