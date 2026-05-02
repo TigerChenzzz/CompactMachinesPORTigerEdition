@@ -1,0 +1,13 @@
+{
+  "itemGroup.yumocompactmachinespor": "Example Mod Tab",
+  "block.yumocompactmachinespor.example_block": "Example Block",
+  "item.yumocompactmachinespor.example_item": "Example Item",
+
+  "yumocompactmachinespor.configuration.title": "yumo compactmachines por Configs",
+  "yumocompactmachinespor.configuration.section.yumocompactmachinespor.common.toml": "yumo compactmachines por Configs",
+  "yumocompactmachinespor.configuration.section.yumocompactmachinespor.common.toml.title": "yumo compactmachines por Configs",
+  "yumocompactmachinespor.configuration.items": "Item List",
+  "yumocompactmachinespor.configuration.logDirtBlock": "Log Dirt Block",
+  "yumocompactmachinespor.configuration.magicNumberIntroduction": "Magic Number Text",
+  "yumocompactmachinespor.configuration.magicNumber": "Magic Number"
+}
