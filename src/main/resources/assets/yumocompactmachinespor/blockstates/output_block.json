@@ -1,6 +1,9 @@
 {
   "variants": {
-    "": {
+    "active=false": {
+      "model": "yumocompactmachinespor:block/output_block"
+    },
+    "active=true": {
       "model": "yumocompactmachinespor:block/output_block"
     }
   }

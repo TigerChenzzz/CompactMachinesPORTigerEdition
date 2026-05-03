@@ -129,11 +129,15 @@ configurations {
 
 dependencies {
     implementation "curse.maven:compact-machines-224218:7621553"
+    localRuntime "curse.maven:pipez-443900:5609056"
     localRuntime "curse.maven:emi-580555:6420931"
     localRuntime "curse.maven:tmrv-1194921:7983494"
     localRuntime "curse.maven:create-328085:7963363"
     localRuntime "curse.maven:guideme-1173950:7127444"
     localRuntime "curse.maven:applied-energistics-2-223794:7027323"
+    localRuntime "curse.maven:jade-324717:7545219"
+    localRuntime "curse.maven:jade-addons-583345:6315149"
+    localRuntime "curse.maven:inventory-essentials-368825:8019500"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
