@@ -1,5 +1,6 @@
-package com.yumocmspor;
+package com.yumocmspor.block;
 
+import com.yumocmspor.yumocompactmachinespor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
@@ -10,54 +11,58 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
-public class InputBlockEntity extends BaseIOBlockEntity {
+public class OutputBlockEntity extends BaseIOBlockEntity {
 
     private final IItemHandler itemHandler = new IItemHandler() {
         @Override
         public int getSlots() {
-            return items.size();
+            return items.isEmpty() ? 1 : items.size();
         }
 
         @Override
         public @NotNull ItemStack getStackInSlot(int slot) {
+            if (items.isEmpty()) return ItemStack.EMPTY;
             if (slot < 0 || slot >= items.size()) return ItemStack.EMPTY;
-            return new ItemStack(BuiltInRegistries.ITEM.get(items.get(slot)), Integer.MAX_VALUE);
+            return new ItemStack(BuiltInRegistries.ITEM.get(items.get(slot)), 1);
         }
 
         @Override
         public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+            if (!isActive()) return stack;
+            if (items.isEmpty() || items.contains(BuiltInRegistries.ITEM.getKey(stack.getItem()))) {
+                if (!simulate) handle(stack);
+                return ItemStack.EMPTY;
+            }
             return stack;
         }
 
         @Override
         public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (!isActive() || slot < 0 || slot >= items.size()) return ItemStack.EMPTY;
-            ItemStack itemStack = new ItemStack(BuiltInRegistries.ITEM.get(items.get(slot)), amount);
-            if (!simulate) handle(itemStack);
-            return itemStack;
+            return ItemStack.EMPTY;
         }
 
         @Override
         public int getSlotLimit(int slot) {
-            return Integer.MAX_VALUE;
+            return 64;
         }
 
         @Override
         public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            return false;
+            return items.isEmpty() || items.contains(BuiltInRegistries.ITEM.getKey(stack.getItem()));
         }
     };
 
     private final IFluidHandler fluidHandler = new IFluidHandler() {
         @Override
         public int getTanks() {
-            return fluids.size();
+            return fluids.isEmpty() ? 1 : fluids.size();
         }
 
         @Override
         public @NotNull FluidStack getFluidInTank(int tank) {
+            if (fluids.isEmpty()) return FluidStack.EMPTY;
             if (tank < 0 || tank >= fluids.size()) return FluidStack.EMPTY;
-            return new FluidStack(BuiltInRegistries.FLUID.get(fluids.get(tank)), Integer.MAX_VALUE);
+            return new FluidStack(BuiltInRegistries.FLUID.get(fluids.get(tank)), 1);
         }
 
         @Override
@@ -67,51 +72,48 @@ public class InputBlockEntity extends BaseIOBlockEntity {
 
         @Override
         public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
-            return false;
+            return fluids.isEmpty() || fluids.contains(BuiltInRegistries.FLUID.getKey(stack.getFluid()));
         }
 
         @Override
         public int fill(FluidStack resource, FluidAction action) {
+            if (!isActive()) return 0;
+            if (fluids.isEmpty() || fluids.contains(BuiltInRegistries.FLUID.getKey(resource.getFluid()))) {
+                if (action == FluidAction.EXECUTE) handle(resource);
+                return resource.getAmount();
+            }
             return 0;
         }
 
         @Override
         public @NotNull FluidStack drain(FluidStack resource, FluidAction action) {
-            if (!isActive()) return FluidStack.EMPTY;
-            if (fluids.contains(BuiltInRegistries.FLUID.getKey(resource.getFluid()))) {
-                if (action == FluidAction.EXECUTE) handle(resource);
-                return resource.copy();
-            }
             return FluidStack.EMPTY;
         }
 
         @Override
         public @NotNull FluidStack drain(int maxDrain, FluidAction action) {
-            if (!isActive() || maxDrain < 0 || fluids.isEmpty()) return FluidStack.EMPTY;
-            FluidStack fluidStack = new FluidStack(BuiltInRegistries.FLUID.get(fluids.getFirst()), maxDrain);
-            if (action == FluidAction.EXECUTE) handle(fluidStack);
-            return fluidStack;
+            return FluidStack.EMPTY;
         }
     };
 
     private final IEnergyStorage energyHandler = new IEnergyStorage() {
         @Override
         public int receiveEnergy(int maxReceive, boolean simulate) {
-            return 0;
-        }
-
-        @Override
-        public int extractEnergy(int maxExtract, boolean simulate) {
             if (isActive()) {
-                if (!simulate) handle(maxExtract);
-                return maxExtract;
+                if (!simulate) handle(maxReceive);
+                return maxReceive;
             }
             return 0;
         }
 
         @Override
+        public int extractEnergy(int maxExtract, boolean simulate) {
+            return 0;
+        }
+
+        @Override
         public int getEnergyStored() {
-            return Integer.MAX_VALUE;
+            return 0;
         }
 
         @Override
@@ -121,17 +123,17 @@ public class InputBlockEntity extends BaseIOBlockEntity {
 
         @Override
         public boolean canExtract() {
-            return isActive();
+            return false;
         }
 
         @Override
         public boolean canReceive() {
-            return false;
+            return true;
         }
     };
 
-    public InputBlockEntity(BlockPos pos, BlockState state) {
-        super(yumocompactmachinespor.INPUT_BLOCK_ENTITY.get(), pos, state);
+    public OutputBlockEntity(BlockPos pos, BlockState state) {
+        super(yumocompactmachinespor.OUTPUT_BLOCK_ENTITY.get(), pos, state);
     }
 
     private boolean isActive() {

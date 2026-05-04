@@ -1,4 +1,4 @@
-package com.yumocmspor;
+package com.yumocmspor.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -8,16 +8,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Nullable;
 
-public class OutputBlock extends BaseIOBlock {
-    public static final MapCodec<OutputBlock> CODEC = simpleCodec(OutputBlock::new);
+public class InputBlock extends BaseIOBlock {
+    public static final MapCodec<InputBlock> CODEC = simpleCodec(InputBlock::new);
 
-    public OutputBlock() {
+    public InputBlock() {
         this(BlockBehaviour.Properties.of()
                 .mapColor(MapColor.COLOR_BLACK)
                 .strength(3.0f, 6.0f));
     }
 
-    public OutputBlock(Properties properties) {
+    public InputBlock(Properties properties) {
         super(properties);
     }
 
@@ -29,6 +29,6 @@ public class OutputBlock extends BaseIOBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new OutputBlockEntity(pos, state);
+        return new InputBlockEntity(pos, state);
     }
 }

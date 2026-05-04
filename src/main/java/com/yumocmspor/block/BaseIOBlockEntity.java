@@ -1,5 +1,7 @@
-package com.yumocmspor;
+package com.yumocmspor.block;
 
+import com.yumocmspor.core.Core;
+import com.yumocmspor.core.Machine.DataSetType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -10,26 +12,23 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BaseIOBlockEntity extends BlockEntity {
-    private final boolean DEBUG = true;
     protected List<ResourceLocation> items = new ArrayList<>();
     protected List<ResourceLocation> fluids = new ArrayList<>();
-    protected WeakReference<FactoryBlockEntity> master = new WeakReference<>(null);
+    protected String master = null;
 
     public BaseIOBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -41,15 +40,15 @@ public abstract class BaseIOBlockEntity extends BlockEntity {
 
     public abstract IEnergyStorage getEnergyHandler();
 
+    public void setMaster(String master) {
+        this.master = master;
+    }
+
     protected boolean checkOrDelete() {
-        if (DEBUG) {
-            master = new WeakReference<>((FactoryBlockEntity) getLevel().getBlockEntity(getBlockPos().below(2)));
-        }
-        if (master.get() == null) {
+        if (master == null) {
             setRemoved();
             this.invalidateCapabilities();
             if (getLevel() != null) {
-
                 getLevel().destroyBlock(getBlockPos(), true);
             }
             return false;
@@ -65,11 +64,11 @@ public abstract class BaseIOBlockEntity extends BlockEntity {
         handle(fluidStack.getFluidHolder(), fluidStack.getAmount());
     }
 
-    protected FactoryBlockEntity.DataSetType getDataSetType() {
+    protected DataSetType getDataSetType() {
         if (this instanceof InputBlockEntity) {
-            return FactoryBlockEntity.DataSetType.Input;
+            return DataSetType.Input;
         } else if (this instanceof OutputBlockEntity) {
-            return FactoryBlockEntity.DataSetType.Output;
+            return DataSetType.Output;
         } else {
             return null;
         }
@@ -77,17 +76,16 @@ public abstract class BaseIOBlockEntity extends BlockEntity {
 
     protected void handle(Holder<?> holder, int count) {
         if (!checkOrDelete()) return;
-        master.get().addData(
-                getDataSetType(),
-                holder,
-                count);
+        if (getLevel() instanceof ServerLevel serverLevel) {
+            Core.setMachineData(master,getDataSetType(),holder,count,Core.getTicks(serverLevel));
+        }
     }
 
     protected void handle(int energy) {
         if (!checkOrDelete()) return;
-        master.get().addEnergyData(
-                getDataSetType(),
-                energy);
+        if (getLevel() instanceof ServerLevel serverLevel) {
+            Core.getMachine(master).addEnergyData(getDataSetType(),energy, Core.getTicks(serverLevel));
+        }
     }
 
     @Override

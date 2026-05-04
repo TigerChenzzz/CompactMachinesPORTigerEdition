@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "yumocompactmachinespor:block/evaluator_block"
+    },
+    "powered=true": {
+      "model": "yumocompactmachinespor:block/evaluator_block"
+    }
+  }
+}
+

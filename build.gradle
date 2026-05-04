@@ -127,8 +127,30 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
+def extractedApis = layout.buildDirectory.dir("extracted-apis")
+
+
+def extractCompactMachinesApi = tasks.register('extractCompactMachinesApi', Copy) {
+
+    def cmJar = configurations.runtimeClasspath.files.find { it.name.contains("compact-machines") }
+
+    if (cmJar) {
+        from zipTree(cmJar)
+        into extractedApis
+        include "META-INF/jarjar/**compactmachines.core-api**.jar"
+        eachFile { f ->
+            f.path = f.name
+        }
+        includeEmptyDirs = false
+    }
+}
+
+
 dependencies {
     implementation "curse.maven:compact-machines-224218:7621553"
+    compileOnly files(extractedApis.map { it.file("dev.compactmods.compactmachines.core-api-7.0.81.jar") }) {
+        builtBy extractCompactMachinesApi
+    }
     localRuntime "curse.maven:pipez-443900:5609056"
     localRuntime "curse.maven:emi-580555:6420931"
     localRuntime "curse.maven:tmrv-1194921:7983494"
@@ -138,6 +160,7 @@ dependencies {
     localRuntime "curse.maven:jade-324717:7545219"
     localRuntime "curse.maven:jade-addons-583345:6315149"
     localRuntime "curse.maven:inventory-essentials-368825:8019500"
+    localRuntime "curse.maven:balm-531761:7420963"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

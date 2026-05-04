@@ -1,4 +1,4 @@
-package com.yumocmspor;
+package com.yumocmspor.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;

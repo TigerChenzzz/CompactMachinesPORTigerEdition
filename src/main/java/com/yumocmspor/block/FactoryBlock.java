@@ -1,6 +1,7 @@
-package com.yumocmspor;
+package com.yumocmspor.block;
 
 import com.mojang.serialization.MapCodec;
+import com.yumocmspor.yumocompactmachinespor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
