@@ -33,8 +33,6 @@ public enum RoomCodeComponentProvider implements IBlockComponentProvider, IServe
     public void appendServerData(CompoundTag data, BlockAccessor blockAccessor) {
         String rc=((RoomCodeBlockEntity)blockAccessor.getBlockEntity()).roomCode;
         if (rc!=null && !rc.isEmpty()){
-        data.putString("rc",rc);}else{
-            boolean b = true;
-        }
+        data.putString("rc",rc);}
     }
 }

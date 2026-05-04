@@ -112,6 +112,9 @@ public class Core {
 
     private static void processBlock(ServerLevel level, int x, int y, int z, String roomCode, boolean active) {
         BlockPos pos = new BlockPos(x, y, z);
+        if (pos.equals(new BlockPos(1025, 3, -1003))){
+            var a = 1;
+        }
         BlockState blockState = level.getBlockState(pos);
         if (active && Config.ENABLE_SCAN.get()) antiCheatBlock(level, pos, blockState);
         if (blockState.is(Cyumocompactmachinespor.INPUT_BLOCK) || blockState.is(Cyumocompactmachinespor.OUTPUT_BLOCK)) {

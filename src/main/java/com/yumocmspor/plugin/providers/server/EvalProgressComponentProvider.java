@@ -34,15 +34,11 @@ public enum EvalProgressComponentProvider implements IBlockComponentProvider, IS
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor blockAccessor) {
         var be =((EvaluatorBlockEntity)blockAccessor.getBlockEntity());
+        if (Core.getMachine(be.roomCode) != null){
         int pg = Math.round(
-                (
-                        Machine.EVALUATE_SECONDS * 20f -
-                                be.getLevel().getServer().getTickCount() +
-                                Core.getMachine(be.roomCode).StartTick.get()
-                ) /
-                        (
-                                Machine.EVALUATE_SECONDS * 20f
-                        )*100);
+                (be.getLevel().getServer().getTickCount() - Core.getMachine(be.roomCode).StartTick.get())
+                        / (Machine.EVALUATE_SECONDS * 20f)*100);
         data.putInt("pg",pg);
+        }
     }
 }
