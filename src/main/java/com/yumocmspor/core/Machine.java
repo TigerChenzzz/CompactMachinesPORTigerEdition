@@ -21,7 +21,7 @@ public class Machine {
 
     public List<Data> EnergyData = null;
 
-    private static final int EVALUATE_SECONDS = Config.EVALUATE_SECONDS.get();
+    public static final int EVALUATE_SECONDS = Config.EVALUATE_SECONDS.get();
 
     public Machine(long startTick, String roomCode, BlockPos targetPos) {
         StartTick.set(startTick);
@@ -41,7 +41,7 @@ public class Machine {
     }
 
     public Data newData() {
-        return new Data(new int[EVALUATE_SECONDS], new AtomicInteger(0));
+        return new Data(new int[EVALUATE_SECONDS]);
     }
 
     public void addData(DataSetType type, Holder<?> id, int data, long currentTick) {
@@ -84,6 +84,6 @@ public class Machine {
         Input, Output
     }
 
-    public record Data(int[] data, AtomicInteger size) {
+    public record Data(int[] data) {
     }
 }

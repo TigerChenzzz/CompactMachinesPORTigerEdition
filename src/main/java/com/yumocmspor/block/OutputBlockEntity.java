@@ -1,6 +1,6 @@
 package com.yumocmspor.block;
 
-import com.yumocmspor.yumocompactmachinespor;
+import com.yumocmspor.Cyumocompactmachinespor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
@@ -106,6 +106,8 @@ public class OutputBlockEntity extends BaseIOBlockEntity {
             return 0;
         }
 
+
+
         @Override
         public int extractEnergy(int maxExtract, boolean simulate) {
             return 0;
@@ -133,12 +135,10 @@ public class OutputBlockEntity extends BaseIOBlockEntity {
     };
 
     public OutputBlockEntity(BlockPos pos, BlockState state) {
-        super(yumocompactmachinespor.OUTPUT_BLOCK_ENTITY.get(), pos, state);
+        super(Cyumocompactmachinespor.OUTPUT_BLOCK_ENTITY.get(), pos, state);
     }
 
-    private boolean isActive() {
-        return getBlockState().getValue(BaseIOBlock.ACTIVE);
-    }
+
 
     @Override
     public IItemHandler getItemHandler() {

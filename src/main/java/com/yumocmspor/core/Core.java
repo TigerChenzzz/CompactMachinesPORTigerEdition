@@ -4,16 +4,23 @@ import com.yumocmspor.Config;
 import com.yumocmspor.block.BaseIOBlock;
 import com.yumocmspor.block.BaseIOBlockEntity;
 import com.yumocmspor.block.FactoryBlockEntity;
-import com.yumocmspor.yumocompactmachinespor;
+import com.yumocmspor.Cyumocompactmachinespor;
 import dev.compactmods.machines.api.CompactMachines;
+import dev.compactmods.machines.api.component.CMDataComponents;
 import dev.compactmods.machines.api.dimension.CompactDimension;
+import dev.compactmods.machines.api.machine.MachineColor;
 import dev.compactmods.machines.api.room.RoomInstance;
 import dev.compactmods.machines.api.room.spatial.IRoomBoundaries;
 import dev.compactmods.machines.server.CompactMachinesServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,6 +32,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static dev.compactmods.machines.machine.Machines.Items.BOUND_MACHINE;
 import static net.minecraft.world.phys.shapes.Shapes.EPSILON;
 
 
@@ -32,7 +40,14 @@ public class Core {
     private static final Map<String, Machine> MACHINES = new HashMap<>();
     private static final Map<String, UUID> ROOM2UUID = new HashMap<>();
 
+    public static TagKey<Block> BanBlocksTag = null;
+
+    public static Map<String, Machine> getMachines(){
+        return MACHINES;
+    }
+
     public static void createMachine(ServerLevel level, String roomCode, BlockPos targetPos) {
+        if (MACHINES.containsKey(roomCode)) return;
         MACHINES.put(roomCode, new Machine(getTicks(level), roomCode, targetPos));
         ROOM2UUID.put(roomCode, UUID.randomUUID());
         loadRoom(level, roomCode);
@@ -79,6 +94,13 @@ public class Core {
         int endY = (int) Math.floor(roomAABB.maxY - EPSILON);
         int endZ = (int) Math.floor(roomAABB.maxZ - EPSILON);
 
+        if (Config.ENABLE_SCAN.get()){
+            ResourceLocation tagId=ResourceLocation.tryParse(Config.SCAN_TAG.get());
+            if (tagId!=null){
+                BanBlocksTag=BlockTags.create(tagId);
+            }
+        }
+
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
                 for (int z = startZ; z <= endZ; z++) {
@@ -92,19 +114,19 @@ public class Core {
         BlockPos pos = new BlockPos(x, y, z);
         BlockState blockState = level.getBlockState(pos);
         if (active && Config.ENABLE_SCAN.get()) antiCheatBlock(level, pos, blockState);
-        if (blockState.is(yumocompactmachinespor.INPUT_BLOCK) || blockState.is(yumocompactmachinespor.OUTPUT_BLOCK)) {
-            ((BaseIOBlockEntity) Objects.requireNonNull(level.getBlockEntity(pos))).setMaster(roomCode);
+        if (blockState.is(Cyumocompactmachinespor.INPUT_BLOCK) || blockState.is(Cyumocompactmachinespor.OUTPUT_BLOCK)) {
+            ((BaseIOBlockEntity) Objects.requireNonNull(level.getBlockEntity(pos))).setRoomCode(roomCode);
             getMachine(roomCode).IOBlocks.add(pos);
             level.setBlock(pos, blockState.setValue(BaseIOBlock.ACTIVE, active),Block.UPDATE_NEIGHBORS);
         }
     }
 
 
-
-
     private static void antiCheatBlock(ServerLevel level, BlockPos pos, BlockState blockState) {
-        if (blockState.is(Tags.Blocks.ORES)) {// TODO: Read Tag in Config
-            level.destroyBlock(pos, true);
+        if (BanBlocksTag!=null){
+            if (blockState.is(BanBlocksTag)){
+                level.destroyBlock(pos, true);
+            }
         }
     }
 
@@ -126,9 +148,11 @@ public class Core {
         }
         Machine machine = getMachine(roomCode);
         Map<Holder<?>, Double> inputData = calculate(machine.InputData);
-        inputData.put(Holder.direct(null),RateEvaluator.evaluateStableRate(machine.EnergyData.getFirst().data()));
+        if (machine.EnergyData != null){
+            inputData.put(Holder.direct(null),RateEvaluator.evaluateStableRate(machine.EnergyData.getFirst().data()));
+        }
         Map<Holder<?>, Double> outputData = calculate(machine.OutputData);
-        outputData.put(Holder.direct(null),RateEvaluator.evaluateStableRate(machine.EnergyData.getLast().data()));
+        if (machine.EnergyData != null) outputData.put(Holder.direct(null),RateEvaluator.evaluateStableRate(machine.EnergyData.getLast().data()));
         machine.IOBlocks.forEach(
                 pos ->
                         compactWorld.setBlock(
@@ -141,10 +165,12 @@ public class Core {
         Objects.requireNonNull(getRoomBoundaries(compactWorld, roomCode)).innerChunkPositions().forEach(
                 chunkPos -> compactWorld.getChunk(chunkPos.x, chunkPos.z).setUnsaved(true));
         unLoadRoom(compactWorld,roomCode);
-        replaceBlock(overworld,overworldPos,yumocompactmachinespor.FACTORY_BLOCK);
+        replaceBlock(overworld,overworldPos, Cyumocompactmachinespor.FACTORY_BLOCK);
         FactoryBlockEntity be = (FactoryBlockEntity) Objects.requireNonNull(overworld.getBlockEntity(overworldPos));
         be.setRoomCode(roomCode);
         be.initTanks(inputData, outputData);
+        MACHINES.remove(roomCode);
+        ROOM2UUID.remove(roomCode);
     }
 
     public static Map<Holder<?>, Double> calculate(Map<Holder<?>, Machine.Data> dataMap) {
@@ -163,4 +189,12 @@ public class Core {
         level.removeBlockEntity(pos);
         level.setBlockAndUpdate(pos, target.value().defaultBlockState());
     }
+
+    public static ItemStack unpackToItem(String roomCode) {
+        ItemStack stack = BOUND_MACHINE.toStack();
+        stack.set(CMDataComponents.BOUND_ROOM_CODE, roomCode);
+        stack.set(CMDataComponents.MACHINE_COLOR, MachineColor.fromARGB(0xFFC95B13));
+        return stack;
+    }
+
 }

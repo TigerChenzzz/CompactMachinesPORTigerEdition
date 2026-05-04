@@ -14,7 +14,31 @@
               "ops": [
                 {
                   "source": "room_code",
-                  "target": "BlockEntityTag.room_code",
+                  "target": "room_code",
+                  "op": "replace"
+                },{
+                  "source": "input_items",
+                  "target": "input_items",
+                  "op": "replace"
+                },{
+                  "source": "input_fluids",
+                  "target": "input_fluids",
+                  "op": "replace"
+                },{
+                  "source": "input_energy",
+                  "target": "input_energy",
+                  "op": "replace"
+                },{
+                  "source": "output_items",
+                  "target": "output_items",
+                  "op": "replace"
+                },{
+                  "source": "output_fluids",
+                  "target": "output_fluids",
+                  "op": "replace"
+                },{
+                  "source": "output_energy",
+                  "target": "output_energy",
                   "op": "replace"
                 }
               ]

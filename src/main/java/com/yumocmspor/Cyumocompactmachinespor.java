@@ -14,14 +14,15 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 
-@Mod(yumocompactmachinespor.MODID)
-public class yumocompactmachinespor {
+@Mod(Cyumocompactmachinespor.MODID)
+public class Cyumocompactmachinespor {
     public static final String MODID = "yumocompactmachinespor";
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -34,7 +35,7 @@ public class yumocompactmachinespor {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredItem<BlockItem> INPUT_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("input_block", INPUT_BLOCK);
     public static final DeferredItem<BlockItem> OUTPUT_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("output_block", OUTPUT_BLOCK);
-    public static final DeferredItem<BlockItem> FACTORY_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("factory_block", FACTORY_BLOCK);
+    public static final DeferredItem<FactoryBlockItem> FACTORY_BLOCK_ITEM = ITEMS.registerItem("factory_block", FactoryBlockItem::new);
     public static final DeferredItem<BlockItem> EVALUATOR_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("evaluator_block", EVALUATOR_BLOCK);
     public static final DeferredItem<Item> LAUNCHER_STICK = ITEMS.registerSimpleItem("launcher_stick", new Item.Properties().stacksTo(1));
 
@@ -57,13 +58,14 @@ public class yumocompactmachinespor {
                 output.accept(LAUNCHER_STICK.get());
             }).build());
 
-    public yumocompactmachinespor(IEventBus modEventBus, ModContainer modContainer) {
+    public Cyumocompactmachinespor(IEventBus modEventBus, ModContainer modContainer) {
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
 
         modEventBus.addListener(this::registerCapabilities);
+        NeoForge.EVENT_BUS.addListener(ServerTick::onServerTickEvent);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 

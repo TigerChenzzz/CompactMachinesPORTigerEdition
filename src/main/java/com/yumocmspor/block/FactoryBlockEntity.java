@@ -1,6 +1,6 @@
 package com.yumocmspor.block;
 
-import com.yumocmspor.yumocompactmachinespor;
+import com.yumocmspor.Cyumocompactmachinespor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -305,7 +305,7 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
     };
 
     public FactoryBlockEntity(BlockPos pos, BlockState state) {
-        super(yumocompactmachinespor.FACTORY_BLOCK_ENTITY.get(), pos, state);
+        super(Cyumocompactmachinespor.FACTORY_BLOCK_ENTITY.get(), pos, state);
     }
 
     public IItemHandler getItemHandler() {
@@ -436,7 +436,6 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.putInt("tick_count", tickCount);
         saveItemMap(tag, "input_items", inputItems);
         saveItemMap(tag, "output_items", outputItems);
         saveFluidMap(tag, "input_fluids", inputFluids);
@@ -448,7 +447,6 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        tickCount = tag.getInt("tick_count");
         inputItems.clear();
         loadItemMap(tag, "input_items", inputItems);
         outputItems.clear();

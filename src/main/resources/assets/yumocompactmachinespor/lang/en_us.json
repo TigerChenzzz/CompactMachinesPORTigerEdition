@@ -11,5 +11,10 @@
   "yumocompactmachinespor.configuration.items": "Item List",
   "yumocompactmachinespor.configuration.logDirtBlock": "Log Dirt Block",
   "yumocompactmachinespor.configuration.magicNumberIntroduction": "Magic Number Text",
-  "yumocompactmachinespor.configuration.magicNumber": "Magic Number"
+  "yumocompactmachinespor.configuration.magicNumber": "Magic Number",
+
+
+  "config.jade.plugin_yumocompactmachinespor.active":"active",
+  "config.jade.plugin_yumocompactmachinespor.room_code": "room_code",
+  "config.jade.plugin_yumocompactmachinespor.progress": "progress"
 }

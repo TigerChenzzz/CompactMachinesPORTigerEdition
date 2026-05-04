@@ -53,7 +53,7 @@ public abstract class BaseIOBlock extends BaseEntityBlock {
 
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof BaseIOBlockEntity ioBe) {
-            if (stack.getItem() instanceof BucketItem bucket && bucket.content.isSame(Fluids.EMPTY)) {
+            if (stack.getItem() instanceof BucketItem bucket && !bucket.content.isSame(Fluids.EMPTY)) {
                 ResourceLocation fluidId = BuiltInRegistries.FLUID.getKey(bucket.content);
                 if (ioBe.fluids.contains(fluidId)) {
                     ioBe.fluids.remove(fluidId);

@@ -1,8 +1,8 @@
 package com.yumocmspor.mixin;
 
+import com.yumocmspor.Cyumocompactmachinespor;
 import com.yumocmspor.block.EvaluatorBlockEntity;
 import com.yumocmspor.core.Core;
-import com.yumocmspor.yumocompactmachinespor;
 import dev.compactmods.machines.machine.block.BoundCompactMachineBlock;
 import dev.compactmods.machines.machine.block.BoundCompactMachineBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -31,16 +31,17 @@ public class BoundCompactMachineBlockMixin {
     private void interceptUseItemOn(
             ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<ItemInteractionResult> cir
     ) {
-        if (stack.is(yumocompactmachinespor.LAUNCHER_STICK)) {
-            stack.shrink(1);
-            if (level.getBlockEntity(pos) instanceof BoundCompactMachineBlockEntity)
+        if (stack.is(Cyumocompactmachinespor.LAUNCHER_STICK)) {
+            if (level.getBlockEntity(pos) instanceof BoundCompactMachineBlockEntity) {
+                stack.shrink(1);
                 if (!level.isClientSide && level instanceof ServerLevel serverLevel) {
                     player.inventoryMenu.broadcastChanges();
                     String roomCode = ((BoundCompactMachineBlockEntity) Objects.requireNonNull(level.getBlockEntity(pos))).connectedRoom();
-                    Core.replaceBlock(serverLevel, pos, yumocompactmachinespor.EVALUATOR_BLOCK);
+                    Core.replaceBlock(serverLevel, pos, Cyumocompactmachinespor.EVALUATOR_BLOCK);
                     ((EvaluatorBlockEntity) Objects.requireNonNull(serverLevel.getBlockEntity(pos))).setRoomCode(roomCode);
                     cir.setReturnValue(ItemInteractionResult.SUCCESS);
                 }
+            }
         }
     }
 }

@@ -38,6 +38,17 @@ repositories {
             includeGroup "curse.maven"
         }
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
 }
 
 base {
@@ -151,6 +162,7 @@ dependencies {
     compileOnly files(extractedApis.map { it.file("dev.compactmods.compactmachines.core-api-7.0.81.jar") }) {
         builtBy extractCompactMachinesApi
     }
+    implementation "maven.modrinth:jade:15.10.5+neoforge"
     localRuntime "curse.maven:pipez-443900:5609056"
     localRuntime "curse.maven:emi-580555:6420931"
     localRuntime "curse.maven:tmrv-1194921:7983494"
@@ -161,6 +173,8 @@ dependencies {
     localRuntime "curse.maven:jade-addons-583345:6315149"
     localRuntime "curse.maven:inventory-essentials-368825:8019500"
     localRuntime "curse.maven:balm-531761:7420963"
+    localRuntime "curse.maven:create-connected-947914:8001008"
+    localRuntime "curse.maven:sodium-394468:6382651"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

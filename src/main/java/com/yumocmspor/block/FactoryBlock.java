@@ -1,7 +1,7 @@
 package com.yumocmspor.block;
 
 import com.mojang.serialization.MapCodec;
-import com.yumocmspor.yumocompactmachinespor;
+import com.yumocmspor.Cyumocompactmachinespor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -46,6 +46,6 @@ public class FactoryBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide ? null : createTickerHelper(type, yumocompactmachinespor.FACTORY_BLOCK_ENTITY.get(), FactoryBlockEntity::tick);
+        return level.isClientSide ? null : createTickerHelper(type, Cyumocompactmachinespor.FACTORY_BLOCK_ENTITY.get(), FactoryBlockEntity::tick);
     }
 }

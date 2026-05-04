@@ -9,8 +9,8 @@ public class Config {
             .comment("Scan")
             .define("Scan", false);
 
-        public static final ModConfigSpec.ConfigValue<String> SCAN_TAG = BUILDER
-            .comment("Block Tag to Scan(WIP)")
+    public static final ModConfigSpec.ConfigValue<String> SCAN_TAG = BUILDER
+            .comment("Block Tag to Scan")
             .define("ScanTag", "c:ores");
 
     public static final ModConfigSpec.IntValue EVALUATE_SECONDS = BUILDER
@@ -18,7 +18,7 @@ public class Config {
             .defineInRange("EvaluateSeconds", 300, 1, Integer.MAX_VALUE);
 
     public static final ModConfigSpec.IntValue UNPACK_PERMISSION_LEVEL = BUILDER
-            .comment("Unpack permission level(WIP)")
+            .comment("Unpack permission level")
             .defineInRange("PermissionLevel", 2, 0, 4);
 
 //    public static final ModConfigSpec.ConfigValue<String> MAGIC_NUMBER_INTRODUCTION = BUILDER

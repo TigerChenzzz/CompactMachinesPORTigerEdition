@@ -14,7 +14,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.IEnergyStorage;
@@ -25,10 +25,9 @@ import net.neoforged.neoforge.items.IItemHandler;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BaseIOBlockEntity extends BlockEntity {
+public abstract class BaseIOBlockEntity extends RoomCodeBlockEntity {
     protected List<ResourceLocation> items = new ArrayList<>();
     protected List<ResourceLocation> fluids = new ArrayList<>();
-    protected String master = null;
 
     public BaseIOBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -40,20 +39,38 @@ public abstract class BaseIOBlockEntity extends BlockEntity {
 
     public abstract IEnergyStorage getEnergyHandler();
 
-    public void setMaster(String master) {
-        this.master = master;
+    protected boolean isActive() {
+        if (getBlockState().getValue(BaseIOBlock.ACTIVE)){
+            return checkAndDeactivate();
+        }
+        return false;
     }
 
-    protected boolean checkOrDelete() {
-        if (master == null) {
-            setRemoved();
-            this.invalidateCapabilities();
-            if (getLevel() != null) {
-                getLevel().destroyBlock(getBlockPos(), true);
-            }
+    protected boolean checkAndDeactivate() {
+        if (check()){
+            deactivate();
+            return true;
+        }else{
             return false;
         }
-        return true;
+    }
+
+    protected boolean check(){
+        return roomCode != null && Core.getMachine(roomCode) != null;
+    }
+
+    protected void deactivate(){
+        if (getLevel() != null) {
+            getLevel().setBlock(getBlockPos(),getBlockState().setValue(BaseIOBlock.ACTIVE,false), Block.UPDATE_NEIGHBORS);
+        }
+    }
+
+    protected void delete(){
+        setRemoved();
+        this.invalidateCapabilities();
+        if (getLevel() != null) {
+            getLevel().destroyBlock(getBlockPos(), true);
+        }
     }
 
     protected void handle(ItemStack itemStack) {
@@ -70,21 +87,21 @@ public abstract class BaseIOBlockEntity extends BlockEntity {
         } else if (this instanceof OutputBlockEntity) {
             return DataSetType.Output;
         } else {
-            return null;
+            throw new RuntimeException("No such DataSetType");
         }
     }
 
     protected void handle(Holder<?> holder, int count) {
-        if (!checkOrDelete()) return;
+        if (!checkAndDeactivate()) return;
         if (getLevel() instanceof ServerLevel serverLevel) {
-            Core.setMachineData(master,getDataSetType(),holder,count,Core.getTicks(serverLevel));
+            Core.setMachineData(roomCode,getDataSetType(),holder,count,Core.getTicks(serverLevel));
         }
     }
 
     protected void handle(int energy) {
-        if (!checkOrDelete()) return;
+        if (!checkAndDeactivate()) return;
         if (getLevel() instanceof ServerLevel serverLevel) {
-            Core.getMachine(master).addEnergyData(getDataSetType(),energy, Core.getTicks(serverLevel));
+            Core.getMachine(roomCode).addEnergyData(getDataSetType(),energy, Core.getTicks(serverLevel));
         }
     }
 
