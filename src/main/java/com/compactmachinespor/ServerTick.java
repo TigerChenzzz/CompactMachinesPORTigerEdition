@@ -27,7 +27,9 @@ public class ServerTick {
         remainingTasks.clear();
 
         Core.getMachines().forEach((roomCode, machine) -> {
-            long elapsedTicks = currentTick - machine.StartTick.get();
+            long startTick = machine.StartTick.get();
+            if (startTick < 0) return;
+            long elapsedTicks = currentTick - startTick;
             long remainingTicks = TOTAL_LIFE_TICKS - elapsedTicks;
 
             if (remainingTicks > 0 && remainingTicks < MAX_TICK_COUNT) {

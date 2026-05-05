@@ -5,23 +5,24 @@
   "block.compactmachinespor.factory_block": "Factory Block",
   "item.compactmachinespor.launcher_stick": "Launcher Stick",
   "block.compactmachinespor.evaluator_block": "Evaluator Block",
-
   "compactmachinespor.configuration.title": "Yumo Compact Machines POR Configs",
   "compactmachinespor.configuration.section.compactmachinespor.common.toml": "Yumo Compact Machines POR Configs",
   "compactmachinespor.configuration.section.compactmachinespor.common.toml.title": "Yumo Compact Machines POR Configs",
-
   "config.compactmachinespor.enable_scan": "Enable Scan",
   "config.compactmachinespor.scan_tag": "Scan Tag",
   "config.compactmachinespor.evaluate_seconds": "Evaluate Seconds",
   "config.compactmachinespor.unpack_permission_level": "Unpack Permission Level",
-
-  "config.jade.plugin_compactmachinespor.active":"active",
+  "config.jade.plugin_compactmachinespor.active": "active",
   "config.jade.plugin_compactmachinespor.room_code": "room_code",
   "config.jade.plugin_compactmachinespor.progress": "progress",
   "config.jade.plugin_compactmachinespor.produce": "produce",
-
   "tooltip.compactmachinespor.active": "Active: %s",
   "tooltip.compactmachinespor.room_code": "RoomCode: %s",
   "tooltip.compactmachinespor.progress": "Progress: %s%%",
-  "tooltip.compactmachinespor.speed": "Speed: %s/s"
+  "tooltip.compactmachinespor.speed": "Speed: %s/s",
+  "chat.compactmachinespor.io_update": "%1$s %2$s has been %3$s",
+  "chat.compactmachinespor.item": "Item",
+  "chat.compactmachinespor.fluid": "Fluid",
+  "chat.compactmachinespor.added": "added",
+  "chat.compactmachinespor.removed": "removed"
 }

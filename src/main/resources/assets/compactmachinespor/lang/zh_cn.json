@@ -5,23 +5,24 @@
   "block.compactmachinespor.factory_block": "工厂方块",
   "item.compactmachinespor.launcher_stick": "启动棒",
   "block.compactmachinespor.evaluator_block": "评估方块",
-
   "compactmachinespor.configuration.title": "压缩空间: 产量推演 配置",
   "compactmachinespor.configuration.section.compactmachinespor.common.toml": "压缩空间: 产量推演 配置",
   "compactmachinespor.configuration.section.compactmachinespor.common.toml.title": "压缩空间: 产量推演 配置",
-
   "config.compactmachinespor.enable_scan": "启用扫描不允许的方块",
   "config.compactmachinespor.scan_tag": "禁用方块标签",
   "config.compactmachinespor.evaluate_seconds": "评估秒数",
   "config.compactmachinespor.unpack_permission_level": "解包权限等级",
-
   "config.jade.plugin_compactmachinespor.active": "激活",
   "config.jade.plugin_compactmachinespor.room_code": "房间代码",
   "config.jade.plugin_compactmachinespor.progress": "进度",
   "config.jade.plugin_compactmachinespor.produce": "产出",
-
   "tooltip.compactmachinespor.active": "激活状态: %s",
   "tooltip.compactmachinespor.room_code": "房间代码: %s",
   "tooltip.compactmachinespor.progress": "进度: %s%%",
-  "tooltip.compactmachinespor.speed": "速度: %s/秒"
+  "tooltip.compactmachinespor.speed": "速度: %s/秒",
+  "chat.compactmachinespor.io_update": "%1$s%2$s已%3$s",
+  "chat.compactmachinespor.item": "物品",
+  "chat.compactmachinespor.fluid": "流体",
+  "chat.compactmachinespor.added": "添加",
+  "chat.compactmachinespor.removed": "移除"
 }

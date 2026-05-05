@@ -59,12 +59,12 @@ public class Machine {
     public void dataAdd(Data dataInner, int add, long currentTick) {
         int currentSecond = (int) ((currentTick - StartTick.get()) / 20);
         if (currentSecond > EVALUATE_SECONDS) {
-            Core.finish(RoomCode,TargetPos);
+            Core.finish(RoomCode, TargetPos);
             return;
         }
         if (currentSecond >= 0 && currentSecond < dataInner.data.length) {
             dataInner.data[currentSecond] += add;
-            if (currentSecond > 0){
+            if (currentSecond > 0) {
                 lastSpeed = dataInner.data[currentSecond - 1];
             }
         }

@@ -34,14 +34,14 @@ public enum EvalComponentProvider implements IBlockComponentProvider, IServerDat
 
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor blockAccessor) {
-        var be =((EvaluatorBlockEntity)blockAccessor.getBlockEntity());
+        var be = ((EvaluatorBlockEntity) blockAccessor.getBlockEntity());
         if (Core.getMachine(be.roomCode) instanceof Machine machine) {
-        int pg = Math.round(
-                (be.getLevel().getServer().getTickCount() - machine.StartTick.get())
-                        / (Machine.EVALUATE_SECONDS * 20f)*100);
-        int lastSpeed = machine.lastSpeed;
-        data.putInt("pg",pg);
-        data.putInt("s",lastSpeed);
+            int pg = Math.round(
+                    (be.getLevel().getServer().getTickCount() - machine.StartTick.get())
+                            / (Machine.EVALUATE_SECONDS * 20f) * 100);
+            int lastSpeed = machine.lastSpeed;
+            data.putInt("pg", pg);
+            data.putInt("s", lastSpeed);
         }
     }
 }

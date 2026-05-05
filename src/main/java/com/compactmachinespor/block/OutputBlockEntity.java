@@ -107,7 +107,6 @@ public class OutputBlockEntity extends BaseIOBlockEntity {
         }
 
 
-
         @Override
         public int extractEnergy(int maxExtract, boolean simulate) {
             return 0;
@@ -137,7 +136,6 @@ public class OutputBlockEntity extends BaseIOBlockEntity {
     public OutputBlockEntity(BlockPos pos, BlockState state) {
         super(Cyumocompactmachinespor.OUTPUT_BLOCK_ENTITY.get(), pos, state);
     }
-
 
 
     @Override

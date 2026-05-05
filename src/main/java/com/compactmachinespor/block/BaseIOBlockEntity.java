@@ -79,32 +79,32 @@ public abstract class BaseIOBlockEntity extends RoomCodeBlockEntity {
     public abstract IEnergyStorage getEnergyHandler();
 
     protected boolean isActive() {
-        if (getBlockState().getValue(BaseIOBlock.ACTIVE)){
+        if (getBlockState().getValue(BaseIOBlock.ACTIVE)) {
             return checkAndDeactivate();
         }
         return false;
     }
 
     protected boolean checkAndDeactivate() {
-        if (check()){
+        if (check()) {
             return true;
-        }else{
+        } else {
             deactivate();
             return false;
         }
     }
 
-    protected boolean check(){
+    protected boolean check() {
         return roomCode != null && Core.getMachine(roomCode) != null;
     }
 
-    protected void deactivate(){
+    protected void deactivate() {
         if (getLevel() != null) {
-            getLevel().setBlock(getBlockPos(),getBlockState().setValue(BaseIOBlock.ACTIVE,false), Block.UPDATE_CLIENTS);
+            getLevel().setBlock(getBlockPos(), getBlockState().setValue(BaseIOBlock.ACTIVE, false), Block.UPDATE_CLIENTS);
         }
     }
 
-    protected void delete(){
+    protected void delete() {
         setRemoved();
         this.invalidateCapabilities();
         if (getLevel() != null) {
@@ -133,14 +133,14 @@ public abstract class BaseIOBlockEntity extends RoomCodeBlockEntity {
     protected void handle(Holder<?> holder, int count) {
         if (!checkAndDeactivate()) return;
         if (getLevel() instanceof ServerLevel serverLevel) {
-            Core.setMachineData(roomCode,getDataSetType(),holder,count,Core.getTicks(serverLevel));
+            Core.setMachineData(roomCode, getDataSetType(), holder, count, Core.getTicks(serverLevel));
         }
     }
 
     protected void handle(int energy) {
         if (!checkAndDeactivate()) return;
         if (getLevel() instanceof ServerLevel serverLevel) {
-            Core.getMachine(roomCode).addEnergyData(getDataSetType(),energy, Core.getTicks(serverLevel));
+            Core.getMachine(roomCode).addEnergyData(getDataSetType(), energy, Core.getTicks(serverLevel));
         }
     }
 

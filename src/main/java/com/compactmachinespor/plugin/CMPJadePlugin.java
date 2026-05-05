@@ -4,6 +4,7 @@ import com.compactmachinespor.block.EvaluatorBlock;
 import com.compactmachinespor.block.FactoryBlock;
 import com.compactmachinespor.block.InputBlock;
 import com.compactmachinespor.block.OutputBlock;
+import com.compactmachinespor.plugin.providers.client.ActiveComponentProvider;
 import com.compactmachinespor.plugin.providers.server.EvalComponentProvider;
 import com.compactmachinespor.plugin.providers.server.FactoryComponentProvider;
 import com.compactmachinespor.plugin.providers.server.RoomCodeComponentProvider;
@@ -36,8 +37,9 @@ public class CMPJadePlugin implements IWailaPlugin {
 
     @Override
     public void registerClient(IWailaClientRegistration registration) {
-//        registration.registerBlockComponent(ActiveComponentProvider.INSTANCE, InputBlock.class);
-//        registration.registerBlockComponent(ActiveComponentProvider.INSTANCE, OutputBlock.class);
+        registration.registerBlockComponent(ActiveComponentProvider.INSTANCE, InputBlock.class);
+        registration.registerBlockComponent(ActiveComponentProvider.INSTANCE, OutputBlock.class);
+        registration.addConfig(ActiveComponentProvider.INSTANCE.getUid(), false);
 
         registration.registerBlockComponent(RoomCodeComponentProvider.INSTANCE, InputBlock.class);
         registration.registerBlockComponent(RoomCodeComponentProvider.INSTANCE, OutputBlock.class);

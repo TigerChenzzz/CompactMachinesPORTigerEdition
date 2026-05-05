@@ -9,14 +9,14 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.energy.EnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -37,6 +37,7 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
             this.amount = amount;
         }
     }
+
     private int tickCount = 0;
     private boolean lastSuccess = true;
     private final Map<Item, Container> inputItems = new LinkedHashMap<>();
@@ -123,7 +124,9 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
                     if (!simulate && toExtract > 0) {
                         c.amount -= toExtract;
                         setChanged();
-                        if (!lastSuccess) operate(FactoryBlockEntity.this);
+                        if (!lastSuccess && isReady(FactoryBlockEntity.this)) {
+                            operate(FactoryBlockEntity.this);
+                        }
                     }
                     return result;
                 }
@@ -403,28 +406,28 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
         return true;
     }
 
-    public static boolean checkEnergy(EnergyStorage energy,boolean fullOrEmpty){
+    public static boolean checkEnergy(EnergyStorage energy, boolean fullOrEmpty) {
         if (checkNull(energy)) return true;
-        return fullOrEmpty? energy.getEnergyStored() == energy.getMaxEnergyStored() : energy.getEnergyStored() == 0;
+        return fullOrEmpty ? energy.getEnergyStored() == energy.getMaxEnergyStored() : energy.getEnergyStored() == 0;
     }
 
-    public static boolean checkNull(Object obj){
-        if (obj instanceof Map<?,?> map) {
+    public static boolean checkNull(Object obj) {
+        if (obj instanceof Map<?, ?> map) {
             return map.isEmpty();
         }
         return obj == null;
     }
 
-    public static boolean isReady(FactoryBlockEntity be){
-        return checkMap(be.inputItems,true) &&
-                checkMap(be.inputFluids,true) &&
-                checkEnergy(be.inputEnergy,true)&&
-                checkMap(be.outputItems,false) &&
-                checkMap(be.outputFluids,false) &&
-                checkEnergy(be.outputEnergy,false);
+    public static boolean isReady(FactoryBlockEntity be) {
+        return checkMap(be.inputItems, true) &&
+                checkMap(be.inputFluids, true) &&
+                checkEnergy(be.inputEnergy, true) &&
+                checkMap(be.outputItems, false) &&
+                checkMap(be.outputFluids, false) &&
+                checkEnergy(be.outputEnergy, false);
     }
 
-    public static void operate(FactoryBlockEntity be){
+    public static void operate(FactoryBlockEntity be) {
         for (Container c : be.inputItems.values()) {
             c.amount = 0;
         }
@@ -445,7 +448,7 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
             be.outputEnergy.receiveEnergy(be.outputEnergy.getMaxEnergyStored(), false);
         }
         be.setChanged();
-        be.lastSuccess=true;
+        be.lastSuccess = true;
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, FactoryBlockEntity be) {
@@ -457,8 +460,8 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
             be.tickCount = 0;
             if (isReady(be)) {
                 operate(be);
-            }else {
-                be.lastSuccess=false;
+            } else {
+                be.lastSuccess = false;
             }
         }
     }
@@ -505,7 +508,7 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
     public static void loadItemMap(CompoundTag tag, String key, Map<Item, Container> map) {
         CompoundTag mapTag = tag.getCompound(key);
         for (String k : mapTag.getAllKeys()) {
-            ResourceLocation id =ResourceLocation.parse(k);
+            ResourceLocation id = ResourceLocation.parse(k);
             if (BuiltInRegistries.ITEM.containsKey(id)) {
                 Item item = BuiltInRegistries.ITEM.get(id);
                 CompoundTag c = mapTag.getCompound(k);
@@ -557,7 +560,7 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
         return null;
     }
 
-    public List<List<?>> getForShow(){
-        return List.of(inputItemList,inputFluidList,outputItemList,outputFluidList);
+    public List<List<?>> getForShow() {
+        return List.of(inputItemList, inputFluidList, outputItemList, outputFluidList);
     }
 }

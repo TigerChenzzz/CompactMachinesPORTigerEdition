@@ -33,13 +33,13 @@ public abstract class RoomCodeBlockEntity extends BlockEntity {
     }
 
 
-    protected void loadCommon(CompoundTag tag){
+    protected void loadCommon(CompoundTag tag) {
         if (tag.contains("room_code")) {
             roomCode = tag.getString("room_code");
         }
     }
 
-    protected void saveCommon(CompoundTag tag){
+    protected void saveCommon(CompoundTag tag) {
         if (roomCode != null) {
             tag.putString("room_code", roomCode);
         }

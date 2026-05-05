@@ -1,8 +1,11 @@
 package com.compactmachinespor.block;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
@@ -53,23 +56,35 @@ public abstract class BaseIOBlock extends BaseEntityBlock {
 
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof BaseIOBlockEntity ioBe) {
+            MutableComponent name;
+            MutableComponent type;
+            MutableComponent action;
             if (stack.getItem() instanceof BucketItem bucket && !bucket.content.isSame(Fluids.EMPTY)) {
                 ResourceLocation fluidId = BuiltInRegistries.FLUID.getKey(bucket.content);
+                name = Component.translatable(bucket.content.getFluidType().getDescriptionId()).withStyle(ChatFormatting.GRAY);
+                type = Component.translatable("chat.compactmachinespor.fluid").withStyle(ChatFormatting.WHITE);
                 if (ioBe.fluids.contains(fluidId)) {
                     ioBe.fluids.remove(fluidId);
+                    action = Component.translatable("chat.compactmachinespor.removed").withStyle(ChatFormatting.WHITE);
                 } else {
                     ioBe.fluids.add(fluidId);
+                    action = Component.translatable("chat.compactmachinespor.added").withStyle(ChatFormatting.WHITE);
                 }
             } else {
                 ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+                name = stack.getHoverName().copy().withStyle(ChatFormatting.GRAY);
+                type = Component.translatable("chat.compactmachinespor.item").withStyle(ChatFormatting.WHITE);
                 if (ioBe.items.contains(itemId)) {
                     ioBe.items.remove(itemId);
+                    action = Component.translatable("chat.compactmachinespor.removed").withStyle(ChatFormatting.WHITE);
                 } else {
                     ioBe.items.add(itemId);
+                    action = Component.translatable("chat.compactmachinespor.added").withStyle(ChatFormatting.WHITE);
                 }
             }
             ioBe.setChanged();
             level.sendBlockUpdated(pos, state, state, 3);
+            player.displayClientMessage(Component.translatable("chat.compactmachinespor.io_update", name, type, action).withStyle(ChatFormatting.GRAY), true);
             return ItemInteractionResult.SUCCESS;
         }
 
