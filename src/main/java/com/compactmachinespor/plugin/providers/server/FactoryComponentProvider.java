@@ -83,9 +83,17 @@ public enum FactoryComponentProvider implements IBlockComponentProvider, IServer
         CompoundTag serverData = accessor.getServerData();
         tooltip.add(Component.literal(""));
         writeIntArray(tooltip, serverData.getIntArray("ii"), BuiltInRegistries.ITEM);
+        if (serverData.getIntArray("ii").length > 0 && serverData.getIntArray("if").length > 0) {
+            tooltip.append(Component.literal("+"));
+        }
         writeIntArray(tooltip, serverData.getIntArray("if"), BuiltInRegistries.FLUID);
+
         tooltip.append(Component.literal("->"));
+
         writeIntArray(tooltip, serverData.getIntArray("oi"), BuiltInRegistries.ITEM);
+        if (serverData.getIntArray("oi").length > 0 && serverData.getIntArray("of").length > 0) {
+            tooltip.append(Component.literal("+"));
+        }
         writeIntArray(tooltip, serverData.getIntArray("of"), BuiltInRegistries.FLUID);
     }
 

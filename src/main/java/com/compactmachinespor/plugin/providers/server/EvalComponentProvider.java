@@ -23,7 +23,12 @@ public enum EvalComponentProvider implements IBlockComponentProvider, IServerDat
             BlockAccessor accessor,
             IPluginConfig config
     ) {
-        tooltip.add(Component.translatable("tooltip.compactmachinespor.progress", accessor.getServerData().getInt("pg")));
+        CompoundTag serverData = accessor.getServerData();
+        if (serverData.getInt("pg") <= 0) {
+            tooltip.add(Component.translatable("tooltip.compactmachinespor.ready"));
+            return;
+        }
+        tooltip.add(Component.translatable("tooltip.compactmachinespor.progress", serverData.getInt("pg")));
         tooltip.add(Component.translatable("tooltip.compactmachinespor.speed", accessor.getServerData().getInt("s")));
     }
 

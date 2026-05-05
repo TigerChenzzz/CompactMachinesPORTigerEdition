@@ -20,6 +20,8 @@
   "tooltip.compactmachinespor.room_code": "房间代码: %s",
   "tooltip.compactmachinespor.progress": "进度: %s%%",
   "tooltip.compactmachinespor.speed": "速度: %s/秒",
+  "tooltip.compactmachinespor.ready": "准备就绪",
+  "tooltip.compactmachinespor.noroomcode": "未绑定",
   "chat.compactmachinespor.io_update": "%1$s%2$s已%3$s",
   "chat.compactmachinespor.item": "物品",
   "chat.compactmachinespor.fluid": "流体",

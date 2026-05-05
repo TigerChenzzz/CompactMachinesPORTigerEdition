@@ -20,6 +20,8 @@
   "tooltip.compactmachinespor.room_code": "RoomCode: %s",
   "tooltip.compactmachinespor.progress": "Progress: %s%%",
   "tooltip.compactmachinespor.speed": "Speed: %s/s",
+  "tooltip.compactmachinespor.ready": "Ready",
+  "tooltip.compactmachinespor.noroomcode": "Not Bound",
   "chat.compactmachinespor.io_update": "%1$s %2$s has been %3$s",
   "chat.compactmachinespor.item": "Item",
   "chat.compactmachinespor.fluid": "Fluid",

@@ -27,8 +27,12 @@ public enum RoomCodeComponentProvider implements IBlockComponentProvider, IServe
             IPluginConfig config
     ) {
         ItemStack itemInHand = accessor.getPlayer().getItemInHand(InteractionHand.MAIN_HAND);
-        if (itemInHand.is(WRENCH) || itemInHand.is(WRENCH2))
-            tooltip.add(Component.translatable("tooltip.compactmachinespor.room_code", accessor.getServerData().getString("rc")));
+        if ((itemInHand.is(WRENCH) || itemInHand.is(WRENCH2)))
+            if (!accessor.getServerData().contains("rc")) {
+                tooltip.add(Component.translatable("tooltip.compactmachinespor.room_code", Component.translatable("tooltip.compactmachinespor.noroomcode")));
+            } else {
+                tooltip.add(Component.translatable("tooltip.compactmachinespor.room_code", accessor.getServerData().getString("rc")));
+            }
     }
 
     @Override

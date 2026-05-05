@@ -1,9 +1,6 @@
 package com.compactmachinespor.plugin;
 
-import com.compactmachinespor.block.EvaluatorBlock;
-import com.compactmachinespor.block.FactoryBlock;
-import com.compactmachinespor.block.InputBlock;
-import com.compactmachinespor.block.OutputBlock;
+import com.compactmachinespor.block.*;
 import com.compactmachinespor.plugin.providers.client.ActiveComponentProvider;
 import com.compactmachinespor.plugin.providers.server.EvalComponentProvider;
 import com.compactmachinespor.plugin.providers.server.FactoryComponentProvider;
@@ -25,21 +22,20 @@ public class CMPJadePlugin implements IWailaPlugin {
 
     @Override
     public void register(IWailaCommonRegistration registration) {
-        registration.registerBlockDataProvider(RoomCodeComponentProvider.INSTANCE, InputBlock.class);
-        registration.registerBlockDataProvider(RoomCodeComponentProvider.INSTANCE, OutputBlock.class);
-        registration.registerBlockDataProvider(RoomCodeComponentProvider.INSTANCE, EvaluatorBlock.class);
-        registration.registerBlockDataProvider(RoomCodeComponentProvider.INSTANCE, FactoryBlock.class);
+        registration.registerBlockDataProvider(RoomCodeComponentProvider.INSTANCE, InputBlockEntity.class);
+        registration.registerBlockDataProvider(RoomCodeComponentProvider.INSTANCE, OutputBlockEntity.class);
+        registration.registerBlockDataProvider(RoomCodeComponentProvider.INSTANCE, EvaluatorBlockEntity.class);
+        registration.registerBlockDataProvider(RoomCodeComponentProvider.INSTANCE, FactoryBlockEntity.class);
 
-        registration.registerBlockDataProvider(EvalComponentProvider.INSTANCE, EvaluatorBlock.class);
+        registration.registerBlockDataProvider(EvalComponentProvider.INSTANCE, EvaluatorBlockEntity.class);
 
-        registration.registerBlockDataProvider(FactoryComponentProvider.INSTANCE, FactoryBlock.class);
+        registration.registerBlockDataProvider(FactoryComponentProvider.INSTANCE, FactoryBlockEntity.class);
     }
 
     @Override
     public void registerClient(IWailaClientRegistration registration) {
         registration.registerBlockComponent(ActiveComponentProvider.INSTANCE, InputBlock.class);
         registration.registerBlockComponent(ActiveComponentProvider.INSTANCE, OutputBlock.class);
-        registration.addConfig(ActiveComponentProvider.INSTANCE.getUid(), false);
 
         registration.registerBlockComponent(RoomCodeComponentProvider.INSTANCE, InputBlock.class);
         registration.registerBlockComponent(RoomCodeComponentProvider.INSTANCE, OutputBlock.class);
