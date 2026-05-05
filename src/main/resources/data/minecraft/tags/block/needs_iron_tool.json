@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "compactmachinespor:input_block",
+    "compactmachinespor:output_block",
+    "compactmachinespor:factory_block"
+  ]
+}

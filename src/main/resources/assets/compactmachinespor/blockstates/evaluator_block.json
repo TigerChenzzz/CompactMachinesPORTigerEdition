@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "compactmachinespor:block/evaluator_block"
+    },
+    "powered=true": {
+      "model": "compactmachinespor:block/evaluator_block"
+    }
+  }
+}
+

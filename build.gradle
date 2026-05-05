@@ -163,18 +163,21 @@ dependencies {
         builtBy extractCompactMachinesApi
     }
     implementation "maven.modrinth:jade:15.10.5+neoforge"
-    localRuntime "curse.maven:pipez-443900:5609056"
+    localRuntime "curse.maven:jade-addons-583345:6315149"
     localRuntime "curse.maven:emi-580555:6420931"
     localRuntime "curse.maven:tmrv-1194921:7983494"
-    localRuntime "curse.maven:create-328085:7963363"
-    localRuntime "curse.maven:guideme-1173950:7127444"
-    localRuntime "curse.maven:applied-energistics-2-223794:7027323"
-    localRuntime "curse.maven:jade-324717:7545219"
-    localRuntime "curse.maven:jade-addons-583345:6315149"
-    localRuntime "curse.maven:inventory-essentials-368825:8019500"
     localRuntime "curse.maven:balm-531761:7420963"
-    localRuntime "curse.maven:create-connected-947914:8001008"
+    localRuntime "curse.maven:inventory-essentials-368825:8019500"
+    localRuntime "curse.maven:cooking-for-blockheads-231484:7966112"
+    localRuntime "curse.maven:bookshelf-228525:7606240"
+    localRuntime "curse.maven:prickle-1023259:6961457"
+    localRuntime "curse.maven:botany-pots-353928:7115287"
+    localRuntime "curse.maven:mekanism-268560:7904058"
+    localRuntime "curse.maven:mekanism-generators-268566:7904061"
+    localRuntime "maven.modrinth:pipez:neoforge-1.21.1-1.2.19"
+    localRuntime "curse.maven:create-328085:7963363"
     localRuntime "curse.maven:sodium-394468:6382651"
+    localRuntime "curse.maven:torcherino-unofficial-888907:6790677"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

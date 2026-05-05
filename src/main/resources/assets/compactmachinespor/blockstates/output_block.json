@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "compactmachinespor:block/output_block"
+    },
+    "active=true": {
+      "model": "compactmachinespor:block/output_block"
+    }
+  }
+}
