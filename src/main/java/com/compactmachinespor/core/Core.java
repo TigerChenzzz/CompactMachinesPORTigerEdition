@@ -1,6 +1,5 @@
 package com.compactmachinespor.core;
 
-import com.compactmachinespor.Config;
 import com.compactmachinespor.Cyumocompactmachinespor;
 import com.compactmachinespor.block.BaseIOBlock;
 import com.compactmachinespor.block.BaseIOBlockEntity;
@@ -14,11 +13,8 @@ import dev.compactmods.machines.api.room.spatial.IRoomBoundaries;
 import dev.compactmods.machines.server.CompactMachinesServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -42,8 +38,6 @@ public class Core {
     private static final Map<String, Machine> MACHINES = new ConcurrentHashMap<>();
     private static final Map<String, UUID> ROOM2UUID = new ConcurrentHashMap<>();
 
-    public static TagKey<Block> BanBlocksTag = null;
-
     public static Map<String, Machine> getMachines() {
         return MACHINES;
     }
@@ -54,7 +48,7 @@ public class Core {
         ROOM2UUID.put(roomCode, UUID.randomUUID());
         ServerLevel compactWorld = overworldLevel.getServer().getLevel(CompactDimension.LEVEL_KEY);
         loadRoom(compactWorld, roomCode);
-        scanRoom(compactWorld, roomCode, true);
+        scanRoom(compactWorld, roomCode);
     }
 
     public static Machine getMachine(String roomCode) {
@@ -88,7 +82,7 @@ public class Core {
 
     }
 
-    public static void scanRoom(ServerLevel compactWorld, String roomCode, boolean active) {
+    public static void scanRoom(ServerLevel compactWorld, String roomCode) {
         AABB roomAABB = Objects.requireNonNull(getRoomBoundaries(compactWorld, roomCode)).outerBounds();
         int startX = (int) Math.floor(roomAABB.minX);
         int startY = (int) Math.floor(roomAABB.minY);
@@ -96,41 +90,40 @@ public class Core {
         int endX = (int) Math.floor(roomAABB.maxX - EPSILON);
         int endY = (int) Math.floor(roomAABB.maxY - EPSILON);
         int endZ = (int) Math.floor(roomAABB.maxZ - EPSILON);
-        if (BanBlocksTag == null && Config.ENABLE_SCAN.get()) {
-            ResourceLocation tagId = ResourceLocation.tryParse(Config.SCAN_TAG.get());
-            if (tagId != null) {
-                BanBlocksTag = BlockTags.create(tagId);
-            }
-        }
+
+        AntiCheat.runPreScan(compactWorld, roomCode, roomAABB);
 
         for (int x = startX; x <= endX; x++) {
             for (int y = startY; y <= endY; y++) {
                 for (int z = startZ; z <= endZ; z++) {
-                    processBlock(compactWorld, x, y, z, roomCode, active);
+                    processBlock(compactWorld, x, y, z, roomCode);
                 }
             }
         }
+
+        AntiCheat.runPostScan(compactWorld, roomCode, roomAABB);
+
+        Machine machine = getMachine(roomCode);
+        if (machine != null) {
+            for (BlockPos pos : machine.IOBlocks) {
+                BlockState state = compactWorld.getBlockState(pos);
+                if (state.hasProperty(BaseIOBlock.ACTIVE)) {
+                    compactWorld.setBlock(pos, state.setValue(BaseIOBlock.ACTIVE, true), Block.UPDATE_ALL);
+                }
+            }
+        }
+
         Objects.requireNonNull(getRoomBoundaries(compactWorld, roomCode)).innerChunkPositions().forEach(
                 chunkPos -> compactWorld.getChunk(chunkPos.x, chunkPos.z).setUnsaved(true));
     }
 
-    private static void processBlock(ServerLevel level, int x, int y, int z, String roomCode, boolean active) {
+    private static void processBlock(ServerLevel level, int x, int y, int z, String roomCode) {
         BlockPos pos = new BlockPos(x, y, z);
         BlockState blockState = level.getBlockState(pos);
-        if (active && Config.ENABLE_SCAN.get()) antiCheatBlock(level, pos, blockState);
+        AntiCheat.runScanBlock(level, pos, blockState, roomCode);
         if (blockState.is(Cyumocompactmachinespor.INPUT_BLOCK) || blockState.is(Cyumocompactmachinespor.OUTPUT_BLOCK)) {
             getMachine(roomCode).IOBlocks.add(pos);
             ((BaseIOBlockEntity) Objects.requireNonNull(level.getBlockEntity(pos))).setRoomCode(roomCode);
-            level.setBlock(pos, blockState.setValue(BaseIOBlock.ACTIVE, active), Block.UPDATE_ALL); // do not use Block.UPDATE_NEIGHBORS because of potential bugs.
-        }
-    }
-
-
-    private static void antiCheatBlock(ServerLevel level, BlockPos pos, BlockState blockState) {
-        if (BanBlocksTag != null) {
-            if (blockState.is(BanBlocksTag)) {
-                level.destroyBlock(pos, true);
-            }
         }
     }
 

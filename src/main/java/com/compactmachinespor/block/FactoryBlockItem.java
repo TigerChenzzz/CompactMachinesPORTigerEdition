@@ -1,6 +1,6 @@
 package com.compactmachinespor.block;
 
-import com.compactmachinespor.Config;
+import com.compactmachinespor.core.AntiCheat;
 import com.compactmachinespor.core.Core;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
@@ -30,7 +30,7 @@ public class FactoryBlockItem extends BlockItem {
 //                    FactoryBlockEntity.loadItemMap(s.copyTag(), "input_items", tmp1);
 //                    Map<Fluid, FactoryBlockEntity.Container> tmp2 = new LinkedHashMap<>();
 //                    FactoryBlockEntity.loadFluidMap(s.copyTag(), "input_fluids", tmp2);
-                    if (player.hasPermissions(Config.UNPACK_PERMISSION_LEVEL.get())) {
+                    if (AntiCheat.checkUnpack(player, roomCode, level, itemInHand, usedHand)) {
                         itemInHand.shrink(1);
                         player.getInventory().add(Core.unpackToItem(roomCode));
                         player.inventoryMenu.broadcastChanges();
