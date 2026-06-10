@@ -40,5 +40,10 @@ public class Config {
             .translation("config.compactmachinespor.suspicious_blocks")
             .defineListAllowEmpty("SuspiciousBlocks", java.util.List.of(), o -> o instanceof String);
 
+    public static final ModConfigSpec.BooleanValue ENABLE_FACTORY_REVERT = BUILDER
+            .comment("Allow launcher stick to revert FactoryBlock back to bound machine. Default false to prevent item duplication.")
+            .translation("config.compactmachinespor.enable_factory_revert")
+            .define("EnableFactoryRevert", false);
+
     static final ModConfigSpec SPEC = BUILDER.build();
 }

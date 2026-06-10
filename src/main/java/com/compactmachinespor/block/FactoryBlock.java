@@ -1,9 +1,12 @@
 package com.compactmachinespor.block;
 
+import com.compactmachinespor.Config;
 import com.compactmachinespor.Cyumocompactmachinespor;
 import com.compactmachinespor.core.Core;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
@@ -53,6 +56,12 @@ public class FactoryBlock extends BaseEntityBlock {
             return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
         }
         if (level.isClientSide) {
+            return ItemInteractionResult.SUCCESS;
+        }
+        if (!Config.ENABLE_FACTORY_REVERT.get()) {
+            player.displayClientMessage(
+                    Component.literal("[CM] 工厂还原功能已被禁用").withStyle(ChatFormatting.GRAY),
+                    true);
             return ItemInteractionResult.SUCCESS;
         }
         if (level.getBlockEntity(pos) instanceof FactoryBlockEntity factoryBe) {
