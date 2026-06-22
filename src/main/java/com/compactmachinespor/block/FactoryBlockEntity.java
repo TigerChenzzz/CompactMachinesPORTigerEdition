@@ -1,6 +1,15 @@
 package com.compactmachinespor.block;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.compactmachinespor.Config;
 import com.compactmachinespor.Cyumocompactmachinespor;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -15,31 +24,60 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public class FactoryBlockEntity extends RoomCodeBlockEntity {
     public static class Container {
-        public final int capacity;
-        public int amount;
+        public final double capacity;
+        public final double rate;
+        public double amount;
 
-        public Container(int capacity, int amount) {
+        public Container(double capacity, double rate) {
             this.capacity = capacity;
-            this.amount = amount;
+            this.rate = rate;
+        }
+
+        // input: 外界输入工厂，实际内容减少
+        public int simulateInput() {
+            return (int)(amount / rate);
+        }
+
+        public void operateInput(int times) {
+            amount = Math.max(0, amount - rate * times);
+        }
+
+        // input: 工厂输出外界，实际内容增加
+        public int simulateOutput() {
+            return (int)((capacity - amount) / rate);
+        }
+
+        public void operateOutput(int times) {
+            amount = Math.min(capacity, amount + rate * times);
         }
     }
 
+    private static Container newContainer(double rate, double minCapacity) {
+        double expectedCapacity = Math.floor(rate * Config.FACTORY_CACHE_TIME.get() * 20);
+        double capacity = Math.max(minCapacity, expectedCapacity);
+        return new Container(capacity, rate);
+    }
+    private static Container newItemContainer(double rate) {
+        return newContainer(rate, 64);
+    }
+    private static Container newFluidContainer(double rate) {
+        return newContainer(rate, 1000);
+    }
+    private static Container newEnergyContainer(double rate) {
+        return newContainer(rate, 1000);
+    }
+
+    private static final int TICK_LOOP = 20;
+
     private int tickCount = 0;
-    private boolean lastSuccess = true;
+    private boolean lazyLoad = false;
     private final Map<Item, Container> inputItems = new LinkedHashMap<>();
     private final Map<Item, Container> outputItems = new LinkedHashMap<>();
 
@@ -51,8 +89,8 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
     private final List<Fluid> inputFluidList = new ArrayList<>();
     private final List<Fluid> outputFluidList = new ArrayList<>();
 
-    private EnergyStorage inputEnergy = null;
-    private EnergyStorage outputEnergy = null;
+    private Container inputEnergy = null;
+    private Container outputEnergy = null;
 
     private void updateLists() {
         inputItemList.clear();
@@ -77,13 +115,13 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
             if (slot < inputSize) {
                 Item item = inputItemList.get(slot);
                 Container c = inputItems.get(item);
-                return new ItemStack(item, c.amount);
+                return new ItemStack(item, (int)c.amount);
             } else {
                 int outputSlot = slot - inputSize;
                 if (outputSlot < outputItemList.size()) {
                     Item item = outputItemList.get(outputSlot);
                     Container c = outputItems.get(item);
-                    return new ItemStack(item, c.amount);
+                    return new ItemStack(item, (int)c.amount);
                 }
             }
             return ItemStack.EMPTY;
@@ -96,11 +134,12 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
                 Item item = inputItemList.get(slot);
                 if (item == stack.getItem()) {
                     Container c = inputItems.get(item);
-                    int space = c.capacity - c.amount;
+                    int space = (int)(c.capacity - c.amount);
                     int toAdd = Math.min(space, stack.getCount());
                     if (!simulate && toAdd > 0) {
                         c.amount += toAdd;
                         setChanged();
+                        lazyLoad = false;
                     }
                     if (toAdd == stack.getCount()) return ItemStack.EMPTY;
                     ItemStack result = stack.copy();
@@ -119,14 +158,12 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
                 if (outputSlot < outputItemList.size()) {
                     Item item = outputItemList.get(outputSlot);
                     Container c = outputItems.get(item);
-                    int toExtract = Math.min(c.amount, amount);
+                    int toExtract = Math.min((int)c.amount, amount);
                     ItemStack result = new ItemStack(item, toExtract);
                     if (!simulate && toExtract > 0) {
                         c.amount -= toExtract;
                         setChanged();
-                        if (!lastSuccess && isReady(FactoryBlockEntity.this)) {
-                            operate(FactoryBlockEntity.this);
-                        }
+                        lazyLoad = false;
                     }
                     return result;
                 }
@@ -138,11 +175,11 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
         public int getSlotLimit(int slot) {
             int inputSize = inputItemList.size();
             if (slot < inputSize) {
-                return inputItems.get(inputItemList.get(slot)).capacity;
+                return (int)inputItems.get(inputItemList.get(slot)).capacity;
             } else {
                 int outputSlot = slot - inputSize;
                 if (outputSlot < outputItemList.size()) {
-                    return outputItems.get(outputItemList.get(outputSlot)).capacity;
+                    return (int)outputItems.get(outputItemList.get(outputSlot)).capacity;
                 }
             }
             return 0;
@@ -170,13 +207,13 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
             if (tank < inputSize) {
                 Fluid fluid = inputFluidList.get(tank);
                 Container c = inputFluids.get(fluid);
-                return new FluidStack(fluid, c.amount);
+                return new FluidStack(fluid, (int)c.amount);
             } else {
                 int outputTank = tank - inputSize;
                 if (outputTank < outputFluidList.size()) {
                     Fluid fluid = outputFluidList.get(outputTank);
                     Container c = outputFluids.get(fluid);
-                    return new FluidStack(fluid, c.amount);
+                    return new FluidStack(fluid, (int)c.amount);
                 }
             }
             return FluidStack.EMPTY;
@@ -186,11 +223,11 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
         public int getTankCapacity(int tank) {
             int inputSize = inputFluidList.size();
             if (tank < inputSize) {
-                return inputFluids.get(inputFluidList.get(tank)).capacity;
+                return (int)inputFluids.get(inputFluidList.get(tank)).capacity;
             } else {
                 int outputTank = tank - inputSize;
                 if (outputTank < outputFluidList.size()) {
-                    return outputFluids.get(outputFluidList.get(outputTank)).capacity;
+                    return (int)outputFluids.get(outputFluidList.get(outputTank)).capacity;
                 }
             }
             return 0;
@@ -212,11 +249,12 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
             for (Map.Entry<Fluid, Container> entry : inputFluids.entrySet()) {
                 if (entry.getKey() == toFill.getFluid()) {
                     Container c = entry.getValue();
-                    int space = c.capacity - c.amount;
+                    int space = (int)(c.capacity - c.amount);
                     int filled = Math.min(space, toFill.getAmount());
                     if (action.execute() && filled > 0) {
                         c.amount += filled;
                         setChanged();
+                        lazyLoad = false;
                     }
                     totalFilled += filled;
                     toFill.shrink(filled);
@@ -232,11 +270,11 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
             for (Map.Entry<Fluid, Container> entry : outputFluids.entrySet()) {
                 if (entry.getKey() == resource.getFluid()) {
                     Container c = entry.getValue();
-                    int drained = Math.min(c.amount, resource.getAmount() - totalDrained);
+                    int drained = Math.min((int)c.amount, resource.getAmount() - totalDrained);
                     if (action.execute() && drained > 0) {
                         c.amount -= drained;
                         setChanged();
-                        if (!lastSuccess) operate(FactoryBlockEntity.this);
+                        lazyLoad = false;
                     }
                     totalDrained += drained;
                     if (totalDrained >= resource.getAmount()) break;
@@ -250,11 +288,12 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
             for (Map.Entry<Fluid, Container> entry : outputFluids.entrySet()) {
                 Container c = entry.getValue();
                 if (c.amount > 0) {
-                    int toDrain = Math.min(c.amount, maxDrain);
+                    int toDrain = Math.min((int)c.amount, maxDrain);
                     FluidStack result = new FluidStack(entry.getKey(), toDrain);
                     if (action.execute()) {
                         c.amount -= toDrain;
                         setChanged();
+                        lazyLoad = false;
                     }
                     return result;
                 }
@@ -266,37 +305,42 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
     private final IEnergyStorage energyHandler = new IEnergyStorage() {
         @Override
         public int receiveEnergy(int maxReceive, boolean simulate) {
-            if (inputEnergy == null) return 0;
-            int received = inputEnergy.receiveEnergy(maxReceive, simulate);
-            if (!simulate && received > 0) setChanged();
+            if (inputEnergy == null || maxReceive <= 0) return 0;
+            int received = Math.min(maxReceive, (int)(inputEnergy.capacity - inputEnergy.amount));
+            if (!simulate && received > 0) {
+                inputEnergy.amount += received;
+                setChanged();
+                lazyLoad = false;
+            }
             return received;
         }
 
         @Override
         public int extractEnergy(int maxExtract, boolean simulate) {
-            if (outputEnergy == null) return 0;
-            int extracted = outputEnergy.extractEnergy(maxExtract, simulate);
+            if (outputEnergy == null || maxExtract <= 0) return 0;
+            int extracted = Math.min(maxExtract, (int)outputEnergy.amount);
             if (!simulate && extracted > 0) {
+                outputEnergy.amount -= extracted;
                 setChanged();
-                if (!lastSuccess) operate(FactoryBlockEntity.this);
+                lazyLoad = false;
             }
             return extracted;
         }
 
         @Override
         public int getEnergyStored() {
-            int total = 0;
-            if (inputEnergy != null) total += inputEnergy.getEnergyStored();
-            if (outputEnergy != null) total += outputEnergy.getEnergyStored();
-            return total;
+            double total = 0;
+            if (inputEnergy != null) total += inputEnergy.amount;
+            if (outputEnergy != null) total += outputEnergy.amount;
+            return (int)total;
         }
 
         @Override
         public int getMaxEnergyStored() {
-            int total = 0;
-            if (inputEnergy != null) total += inputEnergy.getMaxEnergyStored();
-            if (outputEnergy != null) total += outputEnergy.getMaxEnergyStored();
-            return total;
+            double total = 0;
+            if (inputEnergy != null) total += inputEnergy.capacity;
+            if (outputEnergy != null) total += outputEnergy.capacity;
+            return (int)total;
         }
 
         @Override
@@ -317,13 +361,9 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
     @Override
     protected void loadCommon(CompoundTag tag) {
         super.loadCommon(tag);
-        inputItems.clear();
         loadItemMap(tag, "input_items", inputItems);
-        outputItems.clear();
         loadItemMap(tag, "output_items", outputItems);
-        inputFluids.clear();
         loadFluidMap(tag, "input_fluids", inputFluids);
-        outputFluids.clear();
         loadFluidMap(tag, "output_fluids", outputFluids);
         inputEnergy = loadEnergy(tag, "input_energy");
         outputEnergy = loadEnergy(tag, "output_energy");
@@ -371,29 +411,29 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
         for (Map.Entry<Holder<?>, Double> entry : configMap.entrySet()) {
             Holder<?> holder = entry.getKey();
             Object value = holder.value();
-            int capacity = (int) Math.floor(entry.getValue() * 20);
-            if (capacity <= 0) continue;
+            double rate = entry.getValue();
+            if (rate <= 0) continue;
 
             switch (value) {
                 case null -> {
                     if (isInput) {
-                        inputEnergy = new EnergyStorage(capacity);
+                        inputEnergy = newEnergyContainer(rate);
                     } else {
-                        outputEnergy = new EnergyStorage(capacity);
+                        outputEnergy = newEnergyContainer(rate);
                     }
                 }
                 case Item item -> {
                     if (isInput) {
-                        inputItems.put(item, new Container(capacity, 0));
+                        inputItems.put(item, newItemContainer(rate));
                     } else {
-                        outputItems.put(item, new Container(capacity, 0));
+                        outputItems.put(item, newItemContainer(rate));
                     }
                 }
                 case Fluid fluid -> {
                     if (isInput) {
-                        inputFluids.put(fluid, new Container(capacity, 0));
+                        inputFluids.put(fluid, newFluidContainer(rate));
                     } else {
-                        outputFluids.put(fluid, new Container(capacity, 0));
+                        outputFluids.put(fluid, newFluidContainer(rate));
                     }
                 }
                 default -> {
@@ -402,59 +442,54 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
         }
     }
 
-    public static boolean checkMap(Map<?, Container> map, boolean fullOrEmpty) {
-        if (checkNull(map)) return true;
-        for (Container c : map.values()) {
-            if (c.amount != (fullOrEmpty ? c.capacity : 0)) {
-                return false;
-            }
-        }
+    private boolean tryWork() {
+        int times = TICK_LOOP;
+        if ((times = simulate(inputItems, times, true)) == 0) return false;
+        if ((times = simulate(outputItems, times, false)) == 0) return false;
+        if ((times = simulate(inputFluids, times, true)) == 0) return false;
+        if ((times = simulate(outputFluids, times, false)) == 0) return false;
+        if ((times = simulate(inputEnergy, times, true)) == 0) return false;
+        if ((times = simulate(outputEnergy, times, false)) == 0) return false;
+        
+        operate(inputItems, times, true);
+        operate(outputItems, times, false);
+        operate(inputFluids, times, true);
+        operate(outputFluids, times, false);
+        operate(inputEnergy, times, true);
+        operate(outputEnergy, times, false);
         return true;
     }
-
-    public static boolean checkEnergy(EnergyStorage energy, boolean fullOrEmpty) {
-        if (checkNull(energy)) return true;
-        return fullOrEmpty ? energy.getEnergyStored() == energy.getMaxEnergyStored() : energy.getEnergyStored() == 0;
+    private static int simulate(Map<?, Container> map, int times, boolean inputOrOutput) {
+        if (map == null || map.isEmpty()) return times;
+        for (Container c : map.values()) {
+            if ((times = simulate(c, times, inputOrOutput)) == 0) return 0;
+        }
+        return times;
     }
-
-    public static boolean checkNull(Object obj) {
-        if (obj instanceof Map<?, ?> map) {
-            return map.isEmpty();
-        }
-        return obj == null;
+    private static int simulate(Container c, int times, boolean inputOrOutput) {
+        if (c == null) return times;
+        int s = inputOrOutput ? c.simulateInput() : c.simulateOutput();
+        if (s == 0) return 0;
+        if (s > 0) return Math.min(times, s);
+        return times;
     }
-
-    public static boolean isReady(FactoryBlockEntity be) {
-        return checkMap(be.inputItems, true) &&
-                checkMap(be.inputFluids, true) &&
-                checkEnergy(be.inputEnergy, true) &&
-                checkMap(be.outputItems, false) &&
-                checkMap(be.outputFluids, false) &&
-                checkEnergy(be.outputEnergy, false);
+    private static void operate(Map<?, Container> map, int times, boolean inputOrOutput) {
+        if (map == null || map.isEmpty()) return;
+        if (inputOrOutput) {
+            for (Container c : map.values()) c.operateInput(times);
+        }
+        else {
+            for (Container c : map.values()) c.operateOutput(times);
+        }
     }
-
-    public static void operate(FactoryBlockEntity be) {
-        for (Container c : be.inputItems.values()) {
-            c.amount = 0;
+    private static void operate(Container c, int times, boolean inputOrOutput) {
+        if (c == null) return;
+        if (inputOrOutput) {
+            c.operateInput(times);
         }
-        for (Container c : be.inputFluids.values()) {
-            c.amount = 0;
+        else {
+            c.operateOutput(times);
         }
-        if (be.inputEnergy != null) {
-            be.inputEnergy.extractEnergy(be.inputEnergy.getEnergyStored(), false);
-        }
-
-        for (Container c : be.outputItems.values()) {
-            c.amount = c.capacity;
-        }
-        for (Container c : be.outputFluids.values()) {
-            c.amount = c.capacity;
-        }
-        if (be.outputEnergy != null) {
-            be.outputEnergy.receiveEnergy(be.outputEnergy.getMaxEnergyStored(), false);
-        }
-        be.setChanged();
-        be.lastSuccess = true;
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, FactoryBlockEntity be) {
@@ -462,13 +497,12 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
             return;
         }
         be.tickCount++;
-        if (be.tickCount == 20) {
-            be.tickCount = 0;
-            if (isReady(be)) {
-                operate(be);
-            } else {
-                be.lastSuccess = false;
+        if (be.tickCount >= TICK_LOOP) {
+            be.tickCount -= TICK_LOOP;
+            if (be.lazyLoad) {
+                return;
             }
+            be.lazyLoad = !be.tryWork();
         }
     }
 
@@ -504,21 +538,25 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
         for (Map.Entry<Item, Container> entry : map.entrySet()) {
             ResourceLocation rl = BuiltInRegistries.ITEM.getKey(entry.getKey());
             CompoundTag c = new CompoundTag();
-            c.putInt("capacity", entry.getValue().capacity);
-            c.putInt("amount", entry.getValue().amount);
+            var container = entry.getValue();
+            c.putDouble("amount", container.amount);
+            c.putDouble("rate", container.rate);
             mapTag.put(rl.toString(), c);
         }
         tag.put(key, mapTag);
     }
 
     public static void loadItemMap(CompoundTag tag, String key, Map<Item, Container> map) {
+        map.clear();
         CompoundTag mapTag = tag.getCompound(key);
         for (String k : mapTag.getAllKeys()) {
             ResourceLocation id = ResourceLocation.parse(k);
             if (BuiltInRegistries.ITEM.containsKey(id)) {
                 Item item = BuiltInRegistries.ITEM.get(id);
                 CompoundTag c = mapTag.getCompound(k);
-                map.put(item, new Container(c.getInt("capacity"), c.getInt("amount")));
+                var container = newItemContainer(c.getDouble("rate"));
+                container.amount = Math.clamp(c.getDouble("amount"), 0, container.capacity);
+                map.put(item, container);
             }
         }
     }
@@ -528,40 +566,44 @@ public class FactoryBlockEntity extends RoomCodeBlockEntity {
         for (Map.Entry<Fluid, Container> entry : map.entrySet()) {
             ResourceLocation rl = BuiltInRegistries.FLUID.getKey(entry.getKey());
             CompoundTag c = new CompoundTag();
-            c.putInt("capacity", entry.getValue().capacity);
-            c.putInt("amount", entry.getValue().amount);
+            Container container = entry.getValue();
+            c.putDouble("amount", container.amount);
+            c.putDouble("rate", container.rate);
             mapTag.put(rl.toString(), c);
         }
         tag.put(key, mapTag);
     }
 
     public static void loadFluidMap(CompoundTag tag, String key, Map<Fluid, Container> map) {
+        map.clear();
         CompoundTag mapTag = tag.getCompound(key);
         for (String k : mapTag.getAllKeys()) {
             ResourceLocation id = ResourceLocation.parse(k);
             if (BuiltInRegistries.FLUID.containsKey(id)) {
                 Fluid fluid = BuiltInRegistries.FLUID.get(id);
                 CompoundTag c = mapTag.getCompound(k);
-                map.put(fluid, new Container(c.getInt("capacity"), c.getInt("amount")));
+                var container = newItemContainer(c.getDouble("rate"));
+                container.amount = Math.clamp(c.getDouble("amount"), 0, container.capacity);
+                map.put(fluid, container);
             }
         }
     }
 
-    public static void saveEnergy(CompoundTag tag, String key, EnergyStorage energy) {
+    public static void saveEnergy(CompoundTag tag, String key, Container energy) {
         if (energy != null) {
             CompoundTag c = new CompoundTag();
-            c.putInt("capacity", energy.getMaxEnergyStored());
-            c.putInt("energy", energy.getEnergyStored());
+            c.putDouble("amount", energy.amount);
+            c.putDouble("rate", energy.rate);
             tag.put(key, c);
         }
     }
 
-    public static EnergyStorage loadEnergy(CompoundTag tag, String key) {
+    public static Container loadEnergy(CompoundTag tag, String key) {
         if (tag.contains(key)) {
             CompoundTag c = tag.getCompound(key);
-            EnergyStorage e = new EnergyStorage(c.getInt("capacity"));
-            e.receiveEnergy(c.getInt("energy"), false);
-            return e;
+            var container = newEnergyContainer(c.getDouble("rate"));
+            container.amount = Math.clamp(c.getDouble("amount"), 0, container.capacity);
+            return container;
         }
         return null;
     }

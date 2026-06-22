@@ -45,5 +45,10 @@ public class Config {
             .translation("config.compactmachinespor.enable_factory_revert")
             .define("EnableFactoryRevert", false);
 
+    public static final ModConfigSpec.DoubleValue FACTORY_CACHE_TIME = BUILDER
+            .comment("How many seconds would the cache of factory be filled.")
+            .translation("config.compactmachinespor.factory_cache_time")
+            .defineInRange("FactoryCacheTime", 60.0, 1, 3600);
+
     static final ModConfigSpec SPEC = BUILDER.build();
 }
